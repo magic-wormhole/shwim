@@ -197,7 +197,7 @@ async def _host(reactor, mailbox, read_only):
     """
 
     from rich.live import Live
-    status = WormholeStatus()
+    status = WormholeStatus(read_only)
 
     live = Live(
         get_renderable=lambda: status,
