@@ -29,8 +29,9 @@ from .status import WormholeStatus
     "--read-only",
     "-R",
     help="Peers cannot provide input to the terminal",
-    flag_value="read_only",
     default=False,
+    type=bool,
+    is_flag=True,
 )
 @click.argument("code", default=None, required=False)
 def shwim(code, mailbox, read_only):
@@ -196,7 +197,7 @@ async def _host(reactor, mailbox, read_only):
     """
 
     from rich.live import Live
-    status = WormholeStatus()
+    status = WormholeStatus(read_only)
 
     live = Live(
         get_renderable=lambda: status,

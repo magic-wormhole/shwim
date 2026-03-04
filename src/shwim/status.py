@@ -10,7 +10,9 @@ class WormholeStatus:
             "Once connected, we launch "
         )
         txt.append(Text("tty-share", style="bold green"))
-        if not read_only:
+        if read_only:
+            txt.append("\n(read-only mode, guest cannot type)", style="red")
+        else:
             txt.append("\nNote: --read-only was not specified!")
         self.progress = Progress(
             SpinnerColumn(spinner_name="circleHalves", finished_text="✅", speed=1),
