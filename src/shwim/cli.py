@@ -59,7 +59,7 @@ def shwim(code, mailbox, read_only):
         )
 
 
-async def add_to_coop(coop: fowl.api._FowlCoop) -> Any:
+async def add_guest(coop):
     coop.roost("tty-share")
     channel = await coop.when_roosted("tty-share")
     # this ^ succeeds after Fowl is listening on whatever local port,
@@ -67,6 +67,11 @@ async def add_to_coop(coop: fowl.api._FowlCoop) -> Any:
     # "tty-share"
     port = channel.connect_port
     return f"http://localhost:{port}/s/local/"
+
+
+async def add_host(coop):
+    channel = await coop.fledge("tty-share")
+    return channel.listen_port
 
 
 async def _guest(reactor, mailbox, code):
@@ -252,8 +257,8 @@ async def _host(reactor, mailbox, read_only):
 
         # could allocate_tcp_port() and pass it twice here to have
         # both sides use the same port
-        channel = await coop.fledge("tty-share")
-        print(f"running tty-share on localhost:{channel.listen_port}")
+        listen_port = add_host(coop)
+        print(f"running tty-share on localhost:{listen_port}")
 
     ## actually run tty-share (we've gotten rid of the status display now)
     ro_args = ["-readonly"] if read_only else []
@@ -261,7 +266,7 @@ async def _host(reactor, mailbox, read_only):
     tty_done = ensureDeferred(
         launch_tty_share(
             reactor,
-            "--listen", f"localhost:{channel.listen_port}",
+            "--listen", f"localhost:{listen_port}",
             *ro_args,
         )
     )
