@@ -59,6 +59,16 @@ def shwim(code, mailbox, read_only):
         )
 
 
+async def add_to_coop(coop: fowl.api._FowlCoop) -> Any:
+    coop.roost("tty-share")
+    channel = await coop.when_roosted("tty-share")
+    # this ^ succeeds after Fowl is listening on whatever local port,
+    # and has state saying it will accept a peer subchannel called
+    # "tty-share"
+    port = channel.connect_port
+    return f"http://localhost:{port}/s/local/"
+
+
 async def _guest(reactor, mailbox, code):
     """
     Join another person's terminal via tty-share
@@ -73,10 +83,7 @@ async def _guest(reactor, mailbox, code):
     print("Connecting to peer")
     await coop.dilate(transit_relay_location=public_relay.TRANSIT_RELAY)
 
-    coop.roost("tty-share")
-    channel = await coop.when_roosted("tty-share")
-    port = channel.connect_port
-    url = f"http://localhost:{port}/s/local/"
+    url = await add_to_coop(coop)
 
     print(f"...connected, launching tty-share: {url}")
     for remaining in range(3, 0, -1):
