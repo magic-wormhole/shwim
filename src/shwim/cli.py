@@ -58,6 +58,34 @@ def shwim(code, mailbox, read_only):
             lambda r: ensureDeferred(_guest(r, mailbox, code))
         )
 
+## prototype of "magic-wormhole based plugin api"
+# shapr: should this take reactor, as well?
+# meejah: should be synchronous -- but there are some synchronous things you could do with reactor?
+def plugin_prepare(coop):
+    # can call .roost() any number of times to set up potential services
+    coop.roost("tty-share")
+    # maybe this could just return "a list of names of protocols we speak"
+
+
+async def plugin_host_service(reactor, coop):
+    # can do any async work required to host this service (e.g. spawn
+    # subprocesses, whatever)
+    # can call coop.when_roosted() with any names mentioned in prepare?
+    channel = await coop.fledge("tty-share")
+    print(f"run: tty-share --listen localhost:{channel.listen_port}")
+
+
+async def plugin_client_service(reactor, coop):
+    # can do any async work required to be a client of the peer's
+    # service including spawn processes
+
+    # can call coop.fledge() with any names mentioned in prepare?
+    coop.roost("tty-share")
+    channel = await coop.when_roosted("tty-share")
+    port = channel.connect_port
+    url = f"http://localhost:{port}/s/local/"
+    print(f"run: tty-share {url}")
+
 
 async def add_guest(coop):
     coop.roost("tty-share")
